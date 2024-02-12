@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import 'device_screen.dart';
 import '../utils/snackbar.dart';
-import '../widgets/system_device_tile.dart';
 import '../widgets/scan_result_tile.dart';
-import '../utils/extra.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({Key? key}) : super(key: key);
@@ -18,7 +15,6 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanScreenState extends State<ScanScreen> {
-  List<BluetoothDevice> _systemDevices = [];
   List<ScanResult> _scanResults = [];
   bool _isScanning = false;
   late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
@@ -54,13 +50,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
   Future onScanPressed() async {
     try {
-      _systemDevices = await FlutterBluePlus.systemDevices;
-    } catch (e) {
-      Snackbar.show(ABC.b, prettyException("System Devices Error:", e),
-          success: false);
-    }
-    try {
-      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
+      await FlutterBluePlus.startScan();
     } catch (e) {
       Snackbar.show(ABC.b, prettyException("Start Scan Error:", e),
           success: false);
@@ -80,10 +70,10 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   void onConnectPressed(BluetoothDevice device) {
-    device.connectAndUpdateStream().catchError((e) {
-      Snackbar.show(ABC.c, prettyException("Connect Error:", e),
-          success: false);
-    });
+    FlutterBluePlus.stopScan();
+    _isScanning = false;
+    _scanResults.clear();
+    // _scanResultsSubscription.cancel();
     MaterialPageRoute route = MaterialPageRoute(
         builder: (context) => DeviceScreen(device: device),
         settings: const RouteSettings(name: '/DeviceScreen'));
@@ -92,7 +82,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
   Future onRefresh() {
     if (_isScanning == false) {
-      FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
+      FlutterBluePlus.startScan(continuousUpdates: true);
     }
     if (mounted) {
       setState(() {});
@@ -101,7 +91,7 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Widget buildScanButton(BuildContext context) {
-    if (FlutterBluePlus.isScanningNow) {
+    if (_isScanning == true) {
       return FloatingActionButton(
         onPressed: onStopPressed,
         backgroundColor: Colors.red,
@@ -113,32 +103,19 @@ class _ScanScreenState extends State<ScanScreen> {
     }
   }
 
-  List<Widget> _buildSystemDeviceTiles(BuildContext context) {
-    return _systemDevices
-        .map(
-          (d) => SystemDeviceTile(
-            device: d,
-            onOpen: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => DeviceScreen(device: d),
-                settings: const RouteSettings(name: '/DeviceScreen'),
-              ),
-            ),
-            onConnect: () => onConnectPressed(d),
-          ),
-        )
-        .toList();
-  }
-
   List<Widget> _buildScanResultTiles(BuildContext context) {
-    return _scanResults
-        .map(
-          (r) => ScanResultTile(
+    return _scanResults.map(
+      (r) {
+        if (r.advertisementData.connectable) {
+          return ScanResultTile(
             result: r,
             onTap: () => onConnectPressed(r.device),
-          ),
-        )
-        .toList();
+          );
+        } else {
+          return Container();
+        }
+      },
+    ).toList();
   }
 
   @override
@@ -153,7 +130,6 @@ class _ScanScreenState extends State<ScanScreen> {
           onRefresh: onRefresh,
           child: ListView(
             children: <Widget>[
-              ..._buildSystemDeviceTiles(context),
               ..._buildScanResultTiles(context),
             ],
           ),
