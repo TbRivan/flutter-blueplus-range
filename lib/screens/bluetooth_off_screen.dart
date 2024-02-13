@@ -33,7 +33,10 @@ class BluetoothOffScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: ElevatedButton(
-        child: const Text('TURN ON'),
+        child: const Text(
+          'TURN ON',
+          style: TextStyle(color: Colors.black),
+        ),
         onPressed: () async {
           try {
             if (Platform.isAndroid) {
@@ -53,7 +56,7 @@ class BluetoothOffScreen extends StatelessWidget {
     return ScaffoldMessenger(
       key: Snackbar.snackBarKeyA,
       child: Scaffold(
-        backgroundColor: Colors.lightBlue,
+        backgroundColor: Colors.blueGrey[700],
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,

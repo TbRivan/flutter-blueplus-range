@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bluetooth_range/widgets/device_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../utils/snackbar.dart';
 
@@ -18,6 +19,7 @@ class DeviceScreen extends StatefulWidget {
 class _DeviceScreenState extends State<DeviceScreen> {
   List<ScanResult> _scanResults = [];
   late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -27,6 +29,10 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
     _scanResultsSubscription = FlutterBluePlus.scanResults.listen((results) {
       _scanResults = results;
+      _isLoading = true;
+      if (_scanResults.isNotEmpty) {
+        _isLoading = false;
+      }
       if (mounted) {
         setState(() {});
       }
@@ -67,15 +73,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
         .toList();
   }
 
-  Widget buildSpinner(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(14.0),
-      child: AspectRatio(
-        aspectRatio: 1.0,
-        child: CircularProgressIndicator(
-          backgroundColor: Colors.black12,
-          color: Colors.black26,
-        ),
+  Widget _loadingAnimation(BuildContext context) {
+    return Center(
+      child: LoadingAnimationWidget.waveDots(
+        color: Colors.blueGrey,
+        size: 100,
       ),
     );
   }
@@ -97,20 +99,24 @@ class _DeviceScreenState extends State<DeviceScreen> {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () {
                 FlutterBluePlus.stopScan();
                 Navigator.of(context).pop();
                 _scanResultsSubscription.cancel();
                 _scanResults.clear();
               }),
-          title: Text(widget.device.platformName),
+          title: Text(
+            widget.device.platformName,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.blueGrey[700],
         ),
         body: SingleChildScrollView(
           child: Column(
-            children: <Widget>[
-              buildRemoteId(context),
-              ..._buildDeviceInfo(context)
+            children: [
+              _isLoading ? _loadingAnimation(context) : buildRemoteId(context),
+              if (!_isLoading) ..._buildDeviceInfo(context),
             ],
           ),
         ),

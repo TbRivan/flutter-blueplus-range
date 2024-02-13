@@ -44,13 +44,13 @@ class _DeviceInfoState extends State<DeviceInfo> {
               RadialAxis(
                 minimum: 0,
                 maximum: 100,
-                showLabels: false,
+                tickOffset: 50,
+                labelOffset: 10,
                 ranges: <GaugeRange>[
-                  _buildGaugeRange(0, 20, Colors.green, 'Excellent'),
-                  _buildGaugeRange(20, 40, Colors.lime, 'Good'),
-                  _buildGaugeRange(40, 60, Colors.yellow, 'Fair'),
-                  _buildGaugeRange(60, 80, Colors.orange, 'Bad'),
-                  _buildGaugeRange(80, 100, Colors.red, 'Very Bad'),
+                  _buildGaugeRange(0, 55, Colors.green, 'Excellent'),
+                  _buildGaugeRange(55, 70, Colors.lime, 'Good'),
+                  _buildGaugeRange(70, 90, Colors.orange, 'Bad'),
+                  _buildGaugeRange(90, 100, Colors.red, 'Very Bad'),
                 ],
                 pointers: <GaugePointer>[
                   NeedlePointer(value: widget.result.rssi.abs().toDouble())

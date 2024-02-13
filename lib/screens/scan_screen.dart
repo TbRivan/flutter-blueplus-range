@@ -95,11 +95,19 @@ class _ScanScreenState extends State<ScanScreen> {
       return FloatingActionButton(
         onPressed: onStopPressed,
         backgroundColor: Colors.red,
-        child: const Icon(Icons.stop),
+        child: const Icon(
+          Icons.stop,
+          color: Colors.white,
+        ),
       );
     } else {
       return FloatingActionButton(
-          onPressed: onScanPressed, child: const Text("SCAN"));
+          onPressed: onScanPressed,
+          backgroundColor: Colors.blueGrey[700],
+          child: const Text(
+            "SCAN",
+            style: TextStyle(color: Colors.white),
+          ));
     }
   }
 
@@ -124,7 +132,11 @@ class _ScanScreenState extends State<ScanScreen> {
       key: Snackbar.snackBarKeyB,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Find Devices'),
+          title: const Text(
+            'Find Devices',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.blueGrey[700],
         ),
         body: RefreshIndicator(
           onRefresh: onRefresh,
